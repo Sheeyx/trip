@@ -10,7 +10,7 @@ export class MemberResolver {
 
 	@Mutation(() => Member)
 	@UsePipes(ValidationPipe)
-	public async singup(@Args('input') input: MemberInput): Promise<Member> {
+	public async signup(@Args('input') input: MemberInput): Promise<Member> {
 		try {
 			console.log('Mutation:, signup');
 			console.log('input:',input);

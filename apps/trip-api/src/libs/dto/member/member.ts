@@ -5,79 +5,77 @@ import { MemberAuthType, MemberStatus, MemberType } from "../../enums/member.enu
 
 @ObjectType()
 export class Member {
-    @Field(() => String)
-    _id: ObjectId
+	@Field(() => String)
+	_id: ObjectId;
 
-    @Field(() => MemberType)
-    memberType: MemberType
+	@Field(() => MemberType)
+	memberType: MemberType;
 
-    @Field(() => MemberStatus)
+	@Field(() => MemberStatus)
 	memberStatus: MemberStatus;
 
-    @Field(() => MemberAuthType)
-    memberAuthType: MemberAuthType
+	@Field(() => MemberAuthType)
+	memberAuthType: MemberAuthType;
 
-    @Field(() => String)
-    memberPhone: string 
+	@Field(() => String)
+	memberPhone: string;
 
-    @Field(() => String)
-    memberNick: string 
+	@Field(() => String)
+	memberNick: string;
 
-    memberPassword?: string
+	memberPassword?: string;
 
-    @Field(() => String, {nullable: true})
-    memberFullName?: string
+	@Field(() => String, { nullable: true })
+	memberFullName?: string;
 
-    @Field(() => String)
-    memberImage?: string
+	@Field(() => String)
+	memberImage?: string;
 
-    @Field(() => String, {nullable: true})
-    memberAddress?: string
+	@Field(() => String, { nullable: true })
+	memberAddress?: string;
 
-    @Field(() => String, {nullable: true})
-    memberDesc?: string
+	@Field(() => String, { nullable: true })
+	memberDesc?: string;
 
-    @Field(() => Int)
-    memberProperties: number
-     
-    @Field(() => Int)
-    memberArticles: number
+	@Field(() => Int)
+	memberProperties: number;
 
-    @Field(() => Int)
-    memberFollowers: number
+	@Field(() => Int)
+	memberFollowers: number;
 
-    @Field(() => Int)
-    memberFollowings: number
+	@Field(() => Int)
+	memberFollowings: number;
 
-    @Field(() => Int)
-    memberPoints: number
+	@Field(() => Int)
+	memberPoints: number;
 
     @Field(() => Int)
-    memberLikes: number
+	memberArticles: number;
 
-    @Field(() => Int)
-    memberViews: number
+	@Field(() => Int)
+	memberLikes: number;
 
-    @Field(() => Int)
-    memberComments: number
+	@Field(() => Int)
+	memberViews: number;
 
-    @Field(() => Int)
-    memberRank: number
+	@Field(() => Int)
+	memberComments: number;
 
-    @Field(() => Int)
-    memberWarnings: number
+	@Field(() => Int)
+	memberRank: number;
 
-    @Field(() => Int)
-    memberBlocks: number
+	@Field(() => Int)
+	memberWarnings: number;
 
-    @Field(() => Date, {nullable:true})
-    deletedAt?: Date
+	@Field(() => Int)
+	memberBlocks: number;
 
-    @Field(() => Date)
-    createdAt?: Date
+	@Field(() => Date, { nullable: true })
+	deletedAt?: Date;
 
-    @Field(() => Date)
-    updatedAt?: Date
+	@Field(() => Date)
+	createdAt: Date;
 
-
+	@Field(() => Date)
+	updatedAt: Date;
 }
