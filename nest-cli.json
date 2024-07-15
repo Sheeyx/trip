@@ -10,7 +10,7 @@
   "monorepo": true,
   "root": "apps/trip-api",
   "projects": {
-    "trip": {
+    "trip-api": {
       "type": "application",
       "root": "apps/trip-api",
       "entryFile": "main",
