@@ -45,7 +45,8 @@
 		"mongoose": "^8.0.0",
 		"reflect-metadata": "^0.1.13",
 		"rxjs": "^7.8.1",
-		"ws": "^8.14.2"
+		"ws": "^8.14.2",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
