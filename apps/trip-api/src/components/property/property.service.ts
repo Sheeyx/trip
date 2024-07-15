@@ -2,16 +2,16 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Properties, Property } from '../../libs/dto/property/property';
-import { PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
-import { Message } from '../../libs/enums/common.enum';
+import { AgentPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { Direction, Message } from '../../libs/enums/common.enum';
 import { MemberService } from '../member/member.service';
 import { ViewService } from '../view/view.service';
 import { PropertyStatus } from '../../libs/enums/property.enum';
 import { ViewGroup } from '../../libs/enums/view.enum';
-import { StatisticModifier } from '../../libs/types/common';
-import moment from 'moment';
+import { StatisticModifier, T } from '../../libs/types/common';
+import * as moment from 'moment';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
-import { shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 
 @Injectable()
 export class PropertyService {
@@ -86,28 +86,23 @@ export class PropertyService {
 
     //   UPDATE PROPERTY
 
-      public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
+    public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
         let { propertyStatus, soldAt, deletedAt } = input;
-        
-        const search = {
+        const search: T = {
           _id: input._id,
           memberId: memberId,
           propertyStatus: PropertyStatus.ACTIVE,
         };
-    
-        if (propertyStatus === PropertyStatus.SOLD) {
-          soldAt = moment().toDate();
-        } else if (propertyStatus === PropertyStatus.DELETE) {
-          deletedAt = moment().toDate();
-        }
+        if (propertyStatus === PropertyStatus.SOLD) soldAt = moment().toDate();
+        else if ((propertyStatus = PropertyStatus.DELETE)) deletedAt = moment().toDate();
     
         const result = await this.propertyModel
-          .findOneAndUpdate(search, input, {
-            new: true,
-          })
-          .exec();
-    
-        if (!result) throw new InternalServerErrorException('Update failed');
+        .findByIdAndUpdate(
+            search, 
+            input, 
+            { new: true })
+            .exec();
+        if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     
         if (soldAt || deletedAt) {
           await this.memberService.memberStatsEditor({
@@ -116,14 +111,13 @@ export class PropertyService {
             modifier: -1,
           });
         }
-    
         return result;
       }
 
       public async getProperties(memberId: ObjectId, input: PropertiesInquiry): Promise<Properties> {
-        const match: any = { propertyStatus: PropertyStatus.ACTIVE };
-        const sort: any = {
-          [input.sort ?? 'createdAt']: input.direction ?? 'DESC'
+        const match: T = { propertyStatus: PropertyStatus.ACTIVE };
+        const sort: T = {
+          [input.sort ?? 'createdAt']: input.direction ?? Direction.DESC
         };
         this.shapeMatchQuery(match, input);
         console.log('match:', match);
@@ -142,7 +136,7 @@ export class PropertyService {
         ]).exec();
     
         if (!result.length) {
-          throw new InternalServerErrorException('No data found.');
+          throw new InternalServerErrorException(Message.NO_DATA_FOUND);
         }
     
         return result[0];
@@ -178,6 +172,44 @@ export class PropertyService {
             return { [ele]: true };
           });
         }
+      }
+
+      public async getAgentProperties(memberId: ObjectId, input: AgentPropertiesInquiry): Promise<Properties> {
+        const { propertyStatus } = input.search;
+    
+        if (propertyStatus === PropertyStatus.DELETE) {
+          throw new BadRequestException(Message.NOT_ALLOWED_REQUEST);
+        }
+    
+        const match: T = {
+          memberId: memberId,
+          propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE },
+        };
+    
+        const sort: T = {
+          [input.sort ?? 'createdAt']: input.direction ?? Direction.DESC,
+        };
+    
+        const result = await this.propertyModel
+        .aggregate([
+          { $match: match },
+          { $sort: sort },
+          {
+            $facet: {
+              list: [
+                { $skip: (input.page - 1) * input.limit },
+                { $limit: input.limit },
+                lookupMember,
+                { $unwind: '$memberData' }
+              ],
+              metaCounter: [{ $count: 'total' }],
+            },
+          },
+        ]).exec();
+    
+        if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND); 
+    
+        return result[0];
       }
 
 }
