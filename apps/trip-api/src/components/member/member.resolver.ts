@@ -10,6 +10,7 @@ import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { ObjectId } from 'mongoose';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
+import { shapeIntoMongoObjectId } from '../../libs/config';
 
 @Resolver()
 export class MemberResolver {
@@ -58,10 +59,11 @@ export class MemberResolver {
 		return `Hi ${authMember.memberNick}, you are ${authMember.memberType} ('memberId: ${authMember._id})`;
 	}
 
-	@Query(() => String)
-	public async getMember(): Promise<string> {
+	@Query(() => Member)
+	public async getMember(@Args('memberId') input: string): Promise<Member> {
 		console.log('Query:, getMember');
-		return this.memberService.getMember();
+		const targetId = shapeIntoMongoObjectId(input);
+		return this.memberService.getMember(targetId);
 	}
 
 	// Authorization: ADMIN
