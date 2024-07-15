@@ -246,7 +246,7 @@ export class PropertyService {
 		return result[0];
 	}
 
-    public async updatePropertiesByAdmin(input: PropertyUpdate): Promise<Property> {
+    public async updatePropertyByAdmin(input: PropertyUpdate): Promise<Property> {
         let { propertyStatus, soldAt, deletedAt } = input;
         const search: T = {
           _id: input._id,
