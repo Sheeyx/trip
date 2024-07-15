@@ -6,6 +6,9 @@ import { Member } from '../../libs/dto/member/member';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { MemberType } from '../../libs/enums/member.enum';
+import { AuthMember } from '../auth/decorators/authMember.decorator';
+import { ObjectId } from 'mongoose';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Resolver()
 export class MemberResolver {
@@ -25,10 +28,30 @@ export class MemberResolver {
 			return this.memberService.login(input); 
 	}
 
+	/* Authentication */
 	@Mutation(() => String)
-	public async updateMember(): Promise<string> {
+	public async updateMember(@AuthMember('_id') memberId: ObjectId): Promise<string> {
 		console.log('Mutation:, updateMember');
-		return this.memberService.updateMember();
+		console.log(typeof memberId);
+		console.log('memberId:=>', memberId);
+		return await this.memberService.updateMember();
+	}
+
+	@UseGuards(AuthGuard)
+	@Query(() => String)
+	public async checkAuth(@AuthMember('memberNick') memberNick: string): Promise<string> {
+		console.log('Query: checkAuth');
+		console.log('memberNick:', memberNick);
+		return `Hi ${memberNick}`;
+	}
+
+	@Roles(MemberType.USER, MemberType.AGENT)
+	@UseGuards(RolesGuard)
+	@Query(() => String)
+	public async checkAuthRoles(@AuthMember('') authMember: Member): Promise<string> {
+		console.log('Mutation:, checkAuthRoles');
+		console.log('memberNick:=>', authMember);
+		return `Hi ${authMember.memberNick}, you are ${authMember.memberType} ('memberId: ${authMember._id})`;
 	}
 
 	@Query(() => String)
@@ -37,8 +60,8 @@ export class MemberResolver {
 		return this.memberService.getMember();
 	}
 
-	// ADMIN
 	// Authorization: ADMIN
+
 	@Roles(MemberType.ADMIN)
 	@UseGuards(RolesGuard)
 	@Mutation(() => String)
