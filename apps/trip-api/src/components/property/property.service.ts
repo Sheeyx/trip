@@ -9,6 +9,8 @@ import { ViewService } from '../view/view.service';
 import { PropertyStatus } from '../../libs/enums/property.enum';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { StatisticModifier } from '../../libs/types/common';
+import moment from 'moment';
+import { PropertyUpdate } from '../../libs/dto/property/property.update';
 
 @Injectable()
 export class PropertyService {
@@ -32,6 +34,8 @@ export class PropertyService {
 			throw new BadRequestException(Message.CREATE_FAILED );
 		}
     }
+
+    //   GET PROPERTY
 
     public async getProperty(memberId: ObjectId, propertyId: ObjectId): Promise<Property> {
         const search = {
@@ -77,6 +81,42 @@ export class PropertyService {
           { $inc: { [targetKey]: modifier } },
           { new: true },
         ).exec();
+      }
+
+    //   UPDATE PROPERTY
+
+      public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
+        let { propertyStatus, soldAt, deletedAt } = input;
+        
+        const search = {
+          _id: input._id,
+          memberId: memberId,
+          propertyStatus: PropertyStatus.ACTIVE,
+        };
+    
+        if (propertyStatus === PropertyStatus.SOLD) {
+          soldAt = moment().toDate();
+        } else if (propertyStatus === PropertyStatus.DELETE) {
+          deletedAt = moment().toDate();
+        }
+    
+        const result = await this.propertyModel
+          .findOneAndUpdate(search, input, {
+            new: true,
+          })
+          .exec();
+    
+        if (!result) throw new InternalServerErrorException('Update failed');
+    
+        if (soldAt || deletedAt) {
+          await this.memberService.memberStatsEditor({
+            _id: memberId,
+            targetKey: 'memberProperties',
+            modifier: -1,
+          });
+        }
+    
+        return result;
       }
 
 }
