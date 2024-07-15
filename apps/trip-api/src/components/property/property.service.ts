@@ -125,13 +125,17 @@ export class PropertyService {
         const result = await this.propertyModel.aggregate([
           { $match: match },
           { $sort: sort },
-          { $facet: {
-              list: [
-                { $skip: (input.page - 1) * input.limit },
-                { $limit: input.limit }
-              ],
-              metaCounter: [{ $count: 'total' }]
-            }
+          { 
+            $facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							// meliked
+							lookupMember,
+							{ $unwind: '$memberData' },
+						],
+						metaCounter: [{ $count: 'total' }],
+					},
           }
         ]).exec();
     
