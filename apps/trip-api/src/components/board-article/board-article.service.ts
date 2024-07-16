@@ -60,6 +60,13 @@ export class BoardArticleService {
             targetBoardArticle.articleViews++;
           }
         // meLiked
+        const likeInput: LikeInput = {
+          memberId: memberId,
+          likeRefId: articleId ,
+          likeGroup: LikeGroup.ARTICLE,
+          };
+        
+          targetBoardArticle.meLiked = await this.likeService.checkLikeExistance(likeInput);
         }
         targetBoardArticle.memberData = await this.memberService.getMember(null, targetBoardArticle.memberId);
         return targetBoardArticle;
@@ -116,7 +123,6 @@ export class BoardArticleService {
             },
           ])
           .exec();
-      
         if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
         return result[0];
