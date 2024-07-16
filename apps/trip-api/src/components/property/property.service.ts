@@ -11,7 +11,7 @@ import { ViewGroup } from '../../libs/enums/view.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import * as moment from 'moment';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
-import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
@@ -156,7 +156,7 @@ export class PropertyService {
 						list: [
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
-							// meliked
+							lookupAuthMemberLiked(memberId,"$_id"),
 							lookupMember,
 							{ $unwind: '$memberData' },
 						],
@@ -165,12 +165,11 @@ export class PropertyService {
           }
         ]).exec();
     
-        if (!result.length) {
-          throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-        }
+        if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+        
     
         return result[0];
-      }
+      }    
     
       private shapeMatchQuery(match: any, input: PropertiesInquiry): void {
         const {
