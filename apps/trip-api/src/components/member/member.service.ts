@@ -14,11 +14,14 @@ import { ViewInput } from '../../libs/dto/view/view.input';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeService } from '../like/like.service';
+import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 
 @Injectable()
 export class MemberService {
 	constructor(@InjectModel('Member') 
 	private readonly memberModel: Model<Member>,
+	@InjectModel('Follow') 
+	private readonly followModel: Model<Follower | Following>,
 	private authService: AuthService,
 	private viewService: ViewService,
 	private likeService: LikeService,
@@ -103,11 +106,21 @@ export class MemberService {
 		  };
 	  
 		  targetMember.meLiked = await this.likeService.checkLikeExistance(likeInput);
+		  targetMember.meFollowed = await this.checkSubscription(memberId, targetId);
 		// meFollowed
 
 		return targetMember;
 	}
 
+	private async checkSubscription(followerId: ObjectId, followingId: ObjectId): Promise<MeFollowed[]> {
+		const result = await this.followModel.findOne({
+		  followingId: followingId,
+		  followerId: followerId
+		}).exec();
+	  
+		return result ? [{ followerId: followerId, followingId: followingId, myFollowing: true }] : [];
+	  }
+	  
 	public async getAgents(memberId: ObjectId, input: AgentsInquiry): Promise<Members> {
 		const { text } = input.search;
 		const match: T = { memberType: MemberType.AGENT, memberStatus: MemberStatus.ACTIVE };
