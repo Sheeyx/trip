@@ -15,6 +15,8 @@ import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class PropertyService {
@@ -23,6 +25,7 @@ export class PropertyService {
     private readonly memberService: MemberService,
     private viewService: ViewService,
     private likeService: LikeService,
+    private notificationService: NotificationService,
     ){}
 
     public async createProperty(input: PropertyInput): Promise<Property> {
@@ -83,11 +86,12 @@ export class PropertyService {
         return targetProperty;
       }
 
-      public async likeTargetProperty(memberId: ObjectId, likeRefId: ObjectId): Promise<Property> {
+      public async likeTargetProperty(memberId: ObjectId, likeRefId: ObjectId, memberNick: string): Promise<Property> {
         const target: Property = await this.propertyModel.findOne({
           _id: likeRefId,
           propertyStatus: PropertyStatus.ACTIVE,
         }).exec();
+        
       
         if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
       
@@ -107,6 +111,25 @@ export class PropertyService {
       
         if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
     
+        console.log(memberId,"memberId");
+        console.log(likeRefId,"likeRefId");
+        
+        
+        if(modifier > 0) {            
+            await this.notificationService.createNotification(
+                memberId,
+                {
+                    notificationType: NotificationType.LIKE,
+                    notificationGroup: NotificationGroup.PROPERTY,
+                    notificationTitle: "New like",
+                    notificationDesc: `${memberNick} liked your property`,
+                    authorId: memberId,
+                    receiverId: target?.memberId,
+                    notificationStatus: NotificationStatus.WAIT
+                }
+            );
+        }
+
         return result;
         }
 

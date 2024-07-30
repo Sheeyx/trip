@@ -13,16 +13,36 @@ import { FollowInquiry } from '../../libs/dto/follow/follow.input';
 export class FollowResolver {
     constructor(private readonly followService: FollowService){}
 
+    // @UseGuards(AuthGuard)
+    // @Mutation((returns) => Follower)
+    // public async subscribe(
+    // @Args('input') input: string,
+    // @AuthMember('_id') memberId: ObjectId,
+    // @AuthMember('memberNick') memberNick: string,
+    // ): Promise<Follower> {
+    // console.log('Mutation: subscribe');
+    // console.log(memberId);
+    
+    // const followingId = shapeIntoMongoObjectId(input);
+    // console.log(followingId,"followingId");
+
+    // return await this.followService.subscribe(memberId, followingId, memberNick);
+    // }
+
     @UseGuards(AuthGuard)
-    @Mutation((returns) => Follower)
-    public async subscribe(
-    @Args('input') input: string,
-    @AuthMember('_id') memberId: ObjectId,
-    ): Promise<Follower> {
-    console.log('Mutation: subscribe');
-    const followingId = shapeIntoMongoObjectId(input);
-    return await this.followService.subscribe(memberId, followingId);
-    }
+	@Mutation((returns) => Follower)
+	public async subscribe(
+        @Args('input') input: string,
+        @AuthMember('_id') memberId: ObjectId,
+        @AuthMember('memberNick') memberNick: string,
+        ): Promise<Follower> {
+		console.log('Mutation: subscribe');
+		console.log(memberId);
+		const followingId = shapeIntoMongoObjectId(input);
+        console.log(input);
+        
+		return await this.followService.subscribe(memberId, followingId,memberNick);
+	}
 
     @UseGuards(AuthGuard)
     @Mutation((returns) => Follower)

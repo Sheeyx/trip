@@ -247,4 +247,6 @@ export class OrdinaryInquiry {
   @Min(1)
 	@Field(() => Int)
 	limit: number;
+    sort: string;
+    direction: any;
 }

@@ -102,10 +102,12 @@ export class PropertyResolver {
 	public async likeTargetProperty(
 		@Args('propertyId') input: string,
 		@AuthMember('_id') memberId: ObjectId,
+		@AuthMember('memberNick') memberNick: string,
 	): Promise<Property> {
 		console.log('Mutation: likeTargetProperty');
+        
 		const likeRefId = shapeIntoMongoObjectId(input);
-		return await this.propertyService.likeTargetProperty(memberId, likeRefId);
+		return await this.propertyService.likeTargetProperty(memberId, likeRefId, memberNick);
 	}
     
     // ADMIN

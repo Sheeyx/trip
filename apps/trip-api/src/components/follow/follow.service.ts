@@ -5,15 +5,18 @@ import { Follower, Followers, Following, Followings } from '../../libs/dto/follo
 import { MemberService } from '../member/member.service';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { FollowInquiry } from '../../libs/dto/follow/follow.input';
-import { lookupAuthMemberFollowed, lookupAuthMemberLiked, lookupFollowerData, lookupFollowingData } from '../../libs/config';
+import { lookupFollowerData, lookupFollowingData } from '../../libs/config';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class FollowService {
     constructor(@InjectModel("Follow") private readonly followModel: Model<Follower | Following>,
-    private readonly memberService: MemberService
+    private readonly memberService: MemberService,
+    private notificationService: NotificationService,
     ){}
 
-    public async subscribe(followerId: ObjectId, followingId: ObjectId): Promise<Follower> {
+    public async subscribe(followerId: ObjectId, followingId: ObjectId, memberNick: string): Promise<Follower> {
         if (followerId.toString() === followingId.toString()) {
           throw new InternalServerErrorException(Message.SELF_SUBSCRIPTION_DENIED);
         }
@@ -35,7 +38,22 @@ export class FollowService {
           targetKey: 'memberFollowers',
           modifier: 1
         });
-      
+
+        console.log(followingId);
+        
+        await this.notificationService.createNotification(
+            followerId,
+            {
+                notificationType: NotificationType.FOLLOW,
+                notificationGroup: NotificationGroup.MEMBER,
+                notificationTitle: "New follow",
+                notificationDesc: `${memberNick} started following you`,
+                authorId: followerId,
+                receiverId: followingId,
+                notificationStatus: NotificationStatus.WAIT
+            }
+        );
+
         return result;
     }
 
@@ -97,11 +115,8 @@ export class FollowService {
               list: [
                 { $skip: (page - 1) * limit },
                 { $limit: limit },
-                lookupAuthMemberLiked(memberId, "$followingId "),
-                lookupAuthMemberFollowed({
-                  followerId: memberId, 
-                  followingId: "$followingId"
-                }),
+                //meLiked
+                //meFollowed
                 lookupFollowingData,
                 { $unwind: '$followingData' },
               ],
@@ -132,11 +147,8 @@ export class FollowService {
               list: [
                 { $skip: (page - 1) * limit },
                 { $limit: limit },
-                lookupAuthMemberLiked(memberId, "$followerId"),
-                lookupAuthMemberFollowed({
-                  followerId: memberId, 
-                  followingId: "$followerId "
-                }),
+                //meLiked
+                //meFollowed
                 lookupFollowerData,
                 { $unwind: '$followerData' },
               ],
