@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class TripBatchService {
+export class BatchService {
   getHello(): string {
-    return 'Welcome to Trip Batch Server!';
+    return 'Welcome to TRIP BATCH Server!';
   }
 }

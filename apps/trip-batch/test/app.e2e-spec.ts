@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { TripBatchModule } from './../src/trip-batch.module';
+import { TripBatchModule } from '../src/batch.module';
 
 describe('TripBatchController (e2e)', () => {
   let app: INestApplication;
