@@ -25,14 +25,12 @@ export class NotificationResolver {
     return await this.notificationService.getNotifications(shapedNotificationId);
   }
 
-  @UseGuards(AuthGuard)
   @Mutation(() => NotificationDto)
-  public async updateNotification(
-    @Args('notificationUpdate') notificationUpdate: NotificationUpdate,
-  ): Promise<any> {
-    console.log('Mutation: updateNotification');
-
-    return await this.notificationService.updateNotification(notificationUpdate);
+  async updateNotification(
+    @Args('input') input: NotificationUpdate
+  ): Promise<Notification> {
+    return this.notificationService.updateNotification(input);
   }
+
   
 }

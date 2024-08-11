@@ -54,18 +54,17 @@ export class NotificationService {
   }
   
 
-  async updateNotification(notificationUpdate: NotificationUpdate): Promise<Notification> {
-    const { _id, notificationStatus } = notificationUpdate;
-    const notification = await this.notificationModel.findByIdAndUpdate(
-        _id,
-      { notificationStatus},
-      { new: true },
+  async updateNotification(input: NotificationUpdate): Promise<Notification> {
+    const { _id, notificationStatus } = input;
+
+    // Ensure _id is in the correct format
+    const result = await this.notificationModel.findByIdAndUpdate(
+      _id,
+      { notificationStatus },
+      { new: true }
     ).exec();
 
-    if (!notification) {
-      throw new NotFoundException('Notification not found');
-    }
-
-    return notification;
+    return result;
   }
+  
 }

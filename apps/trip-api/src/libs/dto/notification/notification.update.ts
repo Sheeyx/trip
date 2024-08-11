@@ -9,5 +9,4 @@ export class NotificationUpdate {
 
   @Field(() => NotificationStatus)
     notificationStatus: NotificationStatus;
-
 }
