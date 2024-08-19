@@ -14,7 +14,8 @@ export class NotificationService {
 
   async createNotification(memberId: any, input: CreateNotificationInput): Promise<Notification> {
     try {
-        const notification = await this.notificationModel.create({ ...input });
+        const notification = await this.notificationModel.create({ ...input, memberId });
+        
         return notification;
     } catch (err) {
         console.error('Failed to create notification:', err);
@@ -23,6 +24,7 @@ export class NotificationService {
 }
 
   async getNotifications(memberId: ObjectId): Promise<any[]> {
+    
     try {
       const notifications = await this.notificationModel.aggregate([
         {
@@ -31,7 +33,7 @@ export class NotificationService {
         {
           $lookup: {
             from: 'members', // The collection to join
-            localField: 'receiverId', // Field from notifications collection
+            localField: 'authorId', // Field from notifications collection
             foreignField: '_id', // Field from members collection
             as: 'memberData', // Alias for the joined data
           },
@@ -45,13 +47,36 @@ export class NotificationService {
         throw new NotFoundException(Message.NO_DATA_FOUND);
       }
   
-      console.log(notifications);
+      console.log(notifications,"notifications");
       return notifications;
     } catch (err) {
       console.error(err);
       throw new Error('Failed to get notifications');
     }
   }
+
+  async getWaitNotificationCount(memberId: ObjectId): Promise<number> {
+  try {
+    const waitCountResult = await this.notificationModel.aggregate([
+      {
+        $match: { 
+          receiverId: memberId,
+          notificationStatus: 'WAIT'
+        },
+      },
+      {
+        $count: 'waitCount',
+      },
+    ]).exec();
+
+    const waitCount = waitCountResult[0]?.waitCount || 0;
+    return waitCount;
+  } catch (err) {
+    console.error(err);
+    throw new Error('Failed to get wait notification count');
+  }
+}
+
   
 
   async updateNotification(input: NotificationUpdate): Promise<Notification> {

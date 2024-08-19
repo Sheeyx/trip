@@ -25,6 +25,19 @@ export class NotificationResolver {
     return await this.notificationService.getNotifications(shapedNotificationId);
   }
 
+  @UseGuards(AuthGuard)
+@Query(() => Number)
+public async getWaitNotificationCount(
+  @Args('notificationId') notificationId: string,
+  @AuthMember('_id') memberId: ObjectId,
+): Promise<number> {
+  console.log('Query: getWaitNotificationCount');
+
+  const shapedNotificationId = shapeIntoMongoObjectId(notificationId);
+
+  return await this.notificationService.getWaitNotificationCount(shapedNotificationId);
+}
+
   @Mutation(() => NotificationDto)
   async updateNotification(
     @Args('input') input: NotificationUpdate

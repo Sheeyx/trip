@@ -1,4 +1,4 @@
-import { Field, ObjectType, ID } from '@nestjs/graphql';
+import { Field, ObjectType, ID, Int } from '@nestjs/graphql';
 import { NotificationType, NotificationStatus, NotificationGroup } from '../../enums/notification.enum';
 import { ObjectId } from 'mongoose';
 import { Member } from '../member/member';
@@ -41,6 +41,10 @@ export class NotificationDto {
     @Field()
     updatedAt: Date;
 
+    @Field(() => Int, {nullable: true})
+    waitCount: number;
+
     @Field(() => Member, {nullable: true})
 	memberData?: Member;
 }
+
