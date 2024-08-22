@@ -21,6 +21,7 @@ export class CommentInput {
 	commentRefId: ObjectId;
 
 	memberId?: ObjectId;
+  receiverId: ObjectId;
 }
 
 @InputType()

@@ -88,34 +88,33 @@ export class PropertyService {
 
       public async likeTargetProperty(memberId: ObjectId, likeRefId: ObjectId, memberNick: string): Promise<Property> {
         const target: Property = await this.propertyModel.findOne({
-          _id: likeRefId,
-          propertyStatus: PropertyStatus.ACTIVE,
+            _id: likeRefId,
+            propertyStatus: PropertyStatus.ACTIVE,
         }).exec();
-        
-      
+    
         if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-      
+    
         const input: LikeInput = {
-          memberId: memberId,
-          likeRefId: likeRefId,
-          likeGroup: LikeGroup.PROPERTY,
+            memberId: memberId,
+            likeRefId: likeRefId,
+            likeGroup: LikeGroup.PROPERTY,
         };
-      
+    
         // LIKE TOGGLE via Like modules
         const modifier: number = await this.likeService.toggleLike(input);
         const result = await this.propertyStatsEditor({
-          _id: likeRefId,
-          targetKey: 'propertyLikes',
-          modifier: modifier,
+            _id: likeRefId,
+            targetKey: 'propertyLikes',
+            modifier: modifier,
         });
-      
+    
         if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
     
-        console.log(memberId,"memberId");
-        console.log(likeRefId,"likeRefId");
-        
-        
-        if(modifier > 0) {            
+        console.log(memberId, "memberId");
+        console.log(likeRefId, "likeRefId");
+    
+        // Create a notification if a like was added
+        if (modifier > 0) {
             await this.notificationService.createNotification(
                 memberId,
                 {
@@ -124,14 +123,15 @@ export class PropertyService {
                     notificationTitle: "New like",
                     notificationDesc: `${memberNick} liked your property`,
                     authorId: memberId,
-                    receiverId: target?.memberId,
+                    receiverId: target?.memberId,  // The owner of the property
                     notificationStatus: NotificationStatus.WAIT
                 }
             );
         }
-
+    
         return result;
-        }
+    }
+    
 
     //   UPDATE PROPERTY
 

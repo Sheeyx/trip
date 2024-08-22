@@ -12,28 +12,48 @@ import {
 	lookupFollowerData,
 	lookupFollowingData,
 } from '../../libs/config';
+import { CreateNotificationInput } from '../../libs/dto/notification/notification.input';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class FollowService {
 	constructor(
 		@InjectModel('Follow') private readonly followModel: Model<Follower | Following>,
 		private readonly memberService: MemberService,
+		private readonly notificationService: NotificationService,
 	) {}
 
 	public async subscribe(followerId: ObjectId, followingId: ObjectId): Promise<Follower> {
 		if (followerId.toString() === followingId.toString()) {
 			throw new InternalServerErrorException(Message.SELF_SUBSCRIPTION_DENIED);
 		}
-
+	
 		const targetMember = await this.memberService.getMember(null, followingId);
 		if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-
+	
 		const result = await this.registerSubscription(followerId, followingId);
-
+	
+		// Update stats for both follower and following
 		await this.memberService.memberStatsEditor({ _id: followerId, targetKey: 'memberFollowings', modifier: 1 });
 		await this.memberService.memberStatsEditor({ _id: followingId, targetKey: 'memberFollowers', modifier: 1 });
+	
+		// Create notification for the followed member
+		const notificationInput: CreateNotificationInput = {
+			notificationType: NotificationType.FOLLOW,
+            notificationStatus: NotificationStatus.WAIT,
+			notificationGroup: NotificationGroup.MEMBER,
+			notificationTitle: 'Article Comment Added',
+            notificationDesc: 'A new comment has been added to the article.',
+            authorId: followingId,
+            receiverId: followerId,
+		};
+		await this.notificationService.createNotification(followingId, notificationInput);
+	
 		return result;
 	}
+	
+	
 
 	private async registerSubscription(followerId: ObjectId, followingId: ObjectId): Promise<Follower> {
 		try {
