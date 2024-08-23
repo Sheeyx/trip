@@ -20,13 +20,10 @@ export class NoticeService {
 		try {
 			const result: any = await this.noticeModel.create(input);
 
-			// await this.memberService.memberStatsEditor({ _id: result.memberId, targetKey: 'memberNotices', modifier: 1 });
-			// if (!result) throw new InternalServerErrorException(Message.CREATE_FAILED);
-
 			return result;
 		} catch (error) {
 			console.log('Error, Service.model', error.message);
-			throw new BadRequestException(Message.CREATE_FAILED); // bu error nestjsni error handling methodi bolsa, demak bu yerda errorni handle qilsak u bizning global error handlingmizni error messagega joylashadimi?
+			throw new BadRequestException(Message.CREATE_FAILED);
 		}
 	}
 
