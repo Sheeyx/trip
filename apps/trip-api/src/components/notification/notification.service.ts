@@ -23,37 +23,41 @@ export class NotificationService {
     }
 }
 
-  async getNotifications(memberId: ObjectId): Promise<any[]> {
-    
-    try {
-      const notifications = await this.notificationModel.aggregate([
-        {
-          $match: { receiverId: memberId },
+async getNotifications(memberId: ObjectId): Promise<any[]> {
+  try {
+    const notifications = await this.notificationModel.aggregate([
+      {
+        $match: { receiverId: memberId },
+      },
+      {
+        $lookup: {
+          from: 'members', // The collection to join
+          localField: 'authorId', // Field from notifications collection
+          foreignField: '_id', // Field from members collection
+          as: 'memberData', // Alias for the joined data
         },
-        {
-          $lookup: {
-            from: 'members', // The collection to join
-            localField: 'authorId', // Field from notifications collection
-            foreignField: '_id', // Field from members collection
-            as: 'memberData', // Alias for the joined data
-          },
+      },
+      {
+        $unwind: {
+          path: '$memberData', // Unwind the resulting array to denormalize the data
+          preserveNullAndEmptyArrays: true, // Preserve notifications without memberData
         },
-        {
-          $unwind: '$memberData', // Unwind the resulting array to denormalize the data
-        },
-      ]).exec();
-  
-      if (!notifications.length) {
-        throw new NotFoundException(Message.NO_DATA_FOUND);
-      }
-  
-      console.log(notifications,"notifications");
-      return notifications;
-    } catch (err) {
-      console.error(err);
-      throw new Error('Failed to get notifications');
+      },
+    ]).exec();
+
+    // If no notifications are found, return an empty array instead of throwing an error
+    if (!notifications.length) {
+      return []; // Return an empty array when no notifications are found
     }
+
+    console.log(notifications, "notifications");
+    return notifications;
+  } catch (err) {
+    console.error(err);
+    throw new Error('Failed to get notifications');
   }
+}
+
 
   async getWaitNotificationCount(memberId: ObjectId): Promise<number> {
   try {

@@ -13,16 +13,11 @@ export class OrderService {
     return this.orderModel.find().populate('property').exec();
   }
 
-//   async findOne(id: string): Promise<any> {
-//     const result = await this.orderModel.find({ memberId: id }).exec();
-//     console.log(result);
 
-//     return result;
-//   }
 
-async findOne(memberId: string): Promise<any> {
+  async findOne(memberId: string): Promise<any[]> {
     const objectId = shapeIntoMongoObjectId(memberId); // Ensure memberId is cast to ObjectId
-
+  
     const result = await this.orderModel.aggregate([
       { $match: { memberId: objectId } }, // Match orders by memberId
       {
@@ -40,15 +35,17 @@ async findOne(memberId: string): Promise<any> {
         }
       }
     ]).exec();
-
+  
     console.log(result);
-
+  
+    // If no orders are found, return an empty array instead of throwing an error
     if (!result || result.length === 0) {
-      throw new NotFoundException(`No orders found for member with ID ${memberId}`);
+      return []; // Return an empty array
     }
-
+  
     return result;
   }
+  
 
 
 
