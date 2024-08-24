@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { Order } from '../../libs/dto/orders/orders';
 import { CreateOrderInput, UpdateOrderStatusInput } from '../../libs/dto/orders/orders.input';
 import { OrderService } from './orders.service';
+import { AnyARecord } from 'dns';
 
 @Resolver(() => Order)
 export class OrderResolver {
@@ -13,7 +14,7 @@ export class OrderResolver {
   }
 
   @Query(() => [Order])
-  async order(@Args('id', { type: () => String }) id: string): Promise<Order> {
+  async order(@Args('id', { type: () => String }) id: string): Promise<any> {
     console.log(id);
     
     return this.orderService.findOne(id);
