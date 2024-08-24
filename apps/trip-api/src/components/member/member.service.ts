@@ -156,12 +156,16 @@ export class MemberService {
 	public async getAllMembersByAdmin(input: MembersInquiry): Promise<Members> {
 		const { memberStatus, memberType, text } = input.search;
 		const match: T = {};
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = {
+			[input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
+		};
 
-		if (memberStatus) match.MemberStatus = memberStatus;
+		if (memberStatus) match.memberStatus = memberStatus;
+
 		if (memberType) match.memberType = memberType;
+
 		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
-		console.log('match', match);
+		console.log('match:', match);
 
 		const result = await this.memberModel
 			.aggregate([
@@ -169,18 +173,18 @@ export class MemberService {
 				{ $sort: sort },
 				{
 					$facet: {
-						list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }],
+						list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }], //-> pipeline
 						metaCounter: [{ $count: 'total' }],
 					},
 				},
 			])
 			.exec();
 
-		console.log('result', result);
-
 		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
 		return result[0];
 	}
+
 
 	public async likeTargetMember(memberId: ObjectId, likeRefId: ObjectId): Promise<Member> {
 		const target: Member = await this.memberModel.findOne({
@@ -209,16 +213,13 @@ export class MemberService {
 		return result;
 	  }
 
-	public async updateMembersByAdmin(input: MemberUpdate): Promise<Member> {
-		const result: Member = await this.memberModel
-		.findOneAndUpdate({ 
-			_id: input._id }, 
-			input, 
-			{ new: true })
-			.exec();
+	  public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
+		const result: Member = await this.memberModel.findOneAndUpdate({ _id: input._id }, input, { new: true }).exec();
+
+		console.log('input:', input);
+		console.log('input_id:', input._id);
 
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
-
 		return result;
 	}
 
