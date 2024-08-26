@@ -19,15 +19,15 @@ registerEnumType(PropertyStatus, {
 });
 
 export enum PropertyLocation {
-	SEOUL = 'SEOUL',
-	BUSAN = 'BUSAN',
-	INCHEON = 'INCHEON',
-	DAEGU = 'DAEGU',
-	GYEONGJU = 'GYEONGJU',
-	GWANGJU = 'GWANGJU',
-	CHONJU = 'CHONJU',
-	DAEJON = 'DAEJON',
-	JEJU = 'JEJU',
+	TASHKENT = 'TASHKENT',
+	NAMANGAN = 'NAMANGAN',
+	SAMARKAND = 'SAMARKAND',
+	KHOREZM = 'KHOREZM',
+	ANDIJON = 'ANDIJON',
+	NAVOI = 'NAVOI',
+	FERGANA = 'FERGANA',
+	TERMEZ = 'TERMEZ',
+	BUKHARA = 'BUKHARA',
 }
 registerEnumType(PropertyLocation, {
 	name: 'PropertyLocation',
