@@ -8,8 +8,8 @@ services:
     ports:  
       - 4001:3007
     volumes:
-      - ./:/usr/src/trip
-    working_dir: /usr/src/trip
+      - ./:/usr/src/trip-api
+    working_dir: /usr/src/trip-api
 
     networks: 
       - monorepo-network
