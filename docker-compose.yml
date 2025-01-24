@@ -1,41 +1,76 @@
-version: "3.3"
-
 services:
-  trip-api:
+  booking-api:
     container_name: trip-api
     restart: always
-    image:  node:20.10.0
-    ports:  
+    image: node:20.10.0
+    ports:
       - 4001:3007
     volumes:
       - ./:/usr/src/trip-api
     working_dir: /usr/src/trip-api
-
-    networks: 
+    networks:
       - monorepo-network
-
     # FOR PRODUCTION
     command: bash -c "rm -rf dist npm install && npm run build && npm run start:prod"
+    # FOR DEVELOPMENT
+    # command: bash -c "npm install && npm run build && npm run start:dev"
 
-  trip-batch:
+  batch:
     container_name: trip-batch
     restart: unless-stopped
-    image:  node:20.10.0
-    ports:  
+    image: node:20.10.0
+    ports:
       - 4002:3008
     volumes:
-      - ./:/usr/src/trip
-    working_dir: /usr/src/trip
-
-    networks: 
+      - ./:/usr/src/trip-batch
+    working_dir: /usr/src/trip-batch
+    networks:
       - monorepo-network
-
     # FOR PRODUCTION
     command: bash -c "npm install && npm run build && npm run start:prod:batch"
 
 networks:
   monorepo-network:
     driver: bridge
+
+# version: "3.3"
+
+# services:
+#   trip-api:
+#     container_name: trip-api
+#     restart: always
+#     image:  node:20.10.0
+#     ports:  
+#       - 4001:3007
+#     volumes:
+#       - ./:/usr/src/trip-api
+#     working_dir: /usr/src/trip-api
+
+#     networks: 
+#       - monorepo-network
+
+#     # FOR PRODUCTION
+#     command: bash -c "rm -rf dist npm install && npm run build && npm run start:prod"
+
+#   trip-batch:
+#     container_name: trip-batch
+#     restart: unless-stopped
+#     image:  node:20.10.0
+#     ports:  
+#       - 4002:3008
+#     volumes:
+#       - ./:/usr/src/trip
+#     working_dir: /usr/src/trip
+
+#     networks: 
+#       - monorepo-network
+
+#     # FOR PRODUCTION
+#     command: bash -c "npm install && npm run build && npm run start:prod:batch"
+
+# networks:
+#   monorepo-network:
+#     driver: bridge
 
 # nestar-next: localhost: 4000 <=> container:3000
 # nestar-api: localhost: 4001 <=> container:3007
